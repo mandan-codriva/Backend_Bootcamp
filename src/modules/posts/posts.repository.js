@@ -29,7 +29,8 @@ const createPost = async (
   return result.rows[0];
 };
 
-const getAllPosts = async () => {
+const getAllPosts = async (page,limit,search) => {
+  const offset = (page-1)*limit;
   const query = `
     SELECT
       posts.id,
@@ -41,17 +42,46 @@ const getAllPosts = async () => {
       users.username AS author_name
 
     FROM posts
+    
 
     JOIN users
     ON posts.author_id = users.id
 
-    ORDER BY posts.created_at DESC
-  `;
+    WHERE posts.title ILIKE $1
+    OR posts.content ILIKE $1
 
-  const result = await pool.query(query);
+    ORDER BY posts.created_at DESC
+    LIMIT $2
+    OFFSET $3
+  `;
+ 
+  const values = [`%${search}%`,limit,offset];
+  const result = await pool.query(query,values);
 
   return result.rows;
 };
+
+const totalPosts = async (search) =>{
+     const query = `
+     SELECT COUNT(*)
+     FROM posts
+     WHERE title ILIKE $1
+     OR content ILIKE $1
+     `;
+     const values = [
+    `%${search}%`,
+    ];
+
+    const result = await pool.query(query,values);
+     return parseInt(
+    result.rows[0].count
+  );
+}
+
+
+
+
+
 
 const getPostById = async (id) => {
   const query = `
@@ -127,4 +157,5 @@ module.exports = {
   getPostById,
   updatepost,
   deletePost,
+  totalPosts,
 };

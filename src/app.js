@@ -11,6 +11,12 @@ const cookieParser = require("cookie-parser");
 const postsRoutes = require(
   "./modules/posts/posts.routes"
 );
+const commentsRoutes = require(
+  "./modules/comments/comments.routes"
+);
+const reactionsRoutes = require(
+  "./modules/reactions/reactions.routes"
+);
 
 
 
@@ -29,6 +35,11 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRoutes);
 
 app.use("/api/v1/posts", postsRoutes);
+app.use("/api/v1/comments", commentsRoutes);
+app.use(
+  "/api/v1/reactions",
+  reactionsRoutes
+);
 
 app.get("/", (req, res) => {
   res.json({

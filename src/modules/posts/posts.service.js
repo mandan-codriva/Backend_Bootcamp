@@ -18,8 +18,47 @@ const createPostService = async (
   return post;
 };
 
-const getAllPostsService = async () => {
-  return await postsRepository.getAllPosts();
+const getAllPostsService = async (queryParams) => {
+  let {page=1,limit=5,search = "",}=queryParams;
+  page = parseInt(page);
+  limit = parseInt(limit);
+  if(page<1){
+    page =1;
+  }
+  if (limit < 1 || limit > 50) {
+    limit = 5;
+  }
+  const posts =
+    await postsRepository.getAllPosts(
+      page,
+      limit,
+      search
+    );
+
+    const totalPosts =
+    await postsRepository.totalPosts(
+      search
+    );
+    const totalPages = Math.ceil(
+    totalPosts / limit
+  );
+
+  return {
+    page,
+    limit,
+    search,
+
+    totalPosts,
+    totalPages,
+
+    hasNextPage:
+      page < totalPages,
+
+    hasPrevPage:
+      page > 1,
+
+    posts,
+  };
 };
 
 const getPostByIdService = async (

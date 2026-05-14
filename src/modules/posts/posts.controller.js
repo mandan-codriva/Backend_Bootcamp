@@ -31,12 +31,31 @@ const getAllPostsController = async (
   next
 ) => {
   try {
-    const posts =
-      await postsService.getAllPostsService();
+    const result =
+      await postsService.getAllPostsService(req.query);
 
     res.status(200).json({
       success: true,
-      data: posts,
+  pagination: {
+        page: result.page,
+
+        limit: result.limit,
+
+        totalPosts:
+          result.totalPosts,
+
+        totalPages:
+          result.totalPages,
+
+        hasNextPage:
+          result.hasNextPage,
+
+        hasPrevPage:
+          result.hasPrevPage,
+      },
+      search: result.search,
+
+      data: result.posts,
     });
   } catch (error) {
     next(error);
