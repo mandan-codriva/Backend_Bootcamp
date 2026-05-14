@@ -2,7 +2,59 @@
 
 ## Overview
 
-The BlogApp authentication system implements a secure, industry-standard JWT-based authentication flow with refresh token rotation and session management. The system uses a dual-token approach (Access Token + Refresh Token) stored in cookies and headers for maximum security and reliability.
+The BlogApp is a blogging platform with modules for posts, comments, reactions, and pagination, built on Express and PostgreSQL.
+
+### Today's work
+
+This project update includes the following modules:
+
+- **Posts**: create, retrieve, update, and delete blog posts.
+- **Comments**: add, fetch, edit, and remove comments on posts.
+- **Reactions**: like/unlike posts and retrieve reaction counts.
+- **Pagination**: fetch paginated post lists with metadata for page, limit, total pages, and search.
+
+The existing authentication layer continues to provide JWT-based access control for protected routes.
+
+## 🚀 Feature Modules
+
+### Posts
+
+- `POST /api/v1/posts` - create a post (authenticated)
+- `GET /api/v1/posts` - list posts with pagination, search, and metadata
+- `GET /api/v1/posts/:id` - fetch a single post by ID
+- `PUT /api/v1/posts/:id` - update a post (authenticated owner only)
+- `DELETE /api/v1/posts/:id` - delete a post (authenticated owner only)
+
+Pagination is returned as part of the posts response and includes:
+
+- `page`
+- `limit`
+- `totalPosts`
+- `totalPages`
+- `hasNextPage`
+- `hasPrevPage`
+- `search`
+
+### Comments
+
+- `POST /api/v1/comments` - create a comment (authenticated)
+- `GET /api/v1/comments/post/:postId` - get comments for a specific post
+- `PATCH /api/v1/comments/:commentId` - update a comment (authenticated owner only)
+- `DELETE /api/v1/comments/:commentId` - delete a comment (authenticated owner only)
+
+Comments support parent-child relationships through `parentCommentId` for threaded replies.
+
+### Reactions
+
+- `POST /api/v1/reactions` - toggle a reaction on a post (authenticated)
+- `GET /api/v1/reactions/post/:postId` - get total reaction counts for a post
+
+Reaction requests include:
+
+- `postId`
+- `reactionType`
+
+The toggle endpoint returns whether the user added or removed a reaction.
 
 ---
 
