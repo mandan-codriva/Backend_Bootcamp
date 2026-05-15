@@ -6,7 +6,7 @@ const toggleReactionValidation = [
   body("postId")
     .notEmpty()
     .withMessage("Post ID is required")
-    .isInt()
+    .isUUID()
     .withMessage(
       "Post ID must be an integer"
     ),
@@ -24,7 +24,7 @@ const toggleReactionValidation = [
 
 const postIdValidation = [
   param("postId")
-    .isInt()
+    .isUUID()
     .withMessage(
       "Post ID must be an integer"
     ),

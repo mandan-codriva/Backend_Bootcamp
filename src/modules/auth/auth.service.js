@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 
+const profileRepository = require("../profiles/profile.repository");
+
 const authRepository = require("./auth.repository");
 
 const {
@@ -32,6 +34,7 @@ const signupService = async (userData) => {
     email,
     passwordHash
   );
+   await profileRepository.createProfile(user.id);
 
   return user;
 };

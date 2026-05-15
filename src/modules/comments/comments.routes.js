@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   createCommentController,
   getCommentsByPostController,
+  getRepliesByCommentController,
   updateCommentController,
   deleteCommentController,
 } = require("./comments.controller");
@@ -33,6 +34,16 @@ router.get(
   postIdValidation,
   validateMiddleware,
   getCommentsByPostController
+);
+
+router.get(
+  "/:commentId/replies",
+
+  commentIdValidation,
+
+  validateMiddleware,
+
+  getRepliesByCommentController
 );
 
 router.patch(

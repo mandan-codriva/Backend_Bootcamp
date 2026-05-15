@@ -8,6 +8,29 @@ const createCommentService = async ({
   content,
   parentCommentId,
 }) => {
+
+  // Optional production validation
+  if (parentCommentId) {
+
+    const parentComment =
+      await commentsRepository.findCommentById(
+        parentCommentId
+      );
+
+    if (!parentComment) {
+      throw new Error(
+        "Parent comment not found"
+      );
+    }
+
+    if (parentComment.post_id !== postId) {
+      throw new Error(
+        "Reply must belong to same post"
+      );
+    }
+
+  }
+
   const comment =
     await commentsRepository.createComment({
       postId,
@@ -22,6 +45,7 @@ const createCommentService = async ({
 const getCommentsByPostService = async (
   postId
 ) => {
+
   const comments =
     await commentsRepository.findCommentsByPostId(
       postId
@@ -33,39 +57,62 @@ const getCommentsByPostService = async (
 
 
 
-  // STEP 1
   // Create map
   comments.forEach((comment) => {
+
     comment.replies = [];
 
     commentMap[comment.id] = comment;
+
   });
 
 
 
-  // STEP 2
   // Build tree
   comments.forEach((comment) => {
+
     if (comment.parent_comment_id) {
+
       const parentComment =
         commentMap[comment.parent_comment_id];
 
       if (parentComment) {
+
         parentComment.replies.push(comment);
+
       }
+
     } else {
+
       rootComments.push(comment);
+
     }
+
   });
 
   return rootComments;
 };
+
+const getRepliesByCommentService =
+  async (commentId) => {
+
+    const replies =
+      await commentsRepository.findRepliesByCommentId(
+        commentId
+      );
+
+    return replies;
+
+};
+
+
 
 const updateCommentService = async ({
   commentId,
   userId,
   content,
 }) => {
+
   const existingComment =
     await commentsRepository.findCommentById(
       commentId
@@ -94,6 +141,7 @@ const deleteCommentService = async ({
   commentId,
   userId,
 }) => {
+
   const existingComment =
     await commentsRepository.findCommentById(
       commentId
@@ -120,6 +168,7 @@ const deleteCommentService = async ({
 module.exports = {
   createCommentService,
   getCommentsByPostService,
+  getRepliesByCommentService,
   updateCommentService,
   deleteCommentService,
 };

@@ -72,6 +72,43 @@ const findCommentById = async (commentId) => {
   return result.rows[0];
 };
 
+
+const findRepliesByCommentId = async (
+  commentId
+) => {
+
+  const query = `
+    SELECT
+      comments.id,
+      comments.content,
+      comments.parent_comment_id,
+      comments.created_at,
+      comments.updated_at,
+
+      users.id AS user_id,
+      users.username
+
+    FROM comments
+
+    JOIN users
+    ON comments.user_id = users.id
+
+    WHERE comments.parent_comment_id = $1
+
+    ORDER BY comments.created_at ASC;
+  `;
+
+  const values = [commentId];
+
+  const result = await pool.query(
+    query,
+    values
+  );
+
+  return result.rows;
+
+};
+
 const updateComment = async (
   commentId,
   content
@@ -112,4 +149,5 @@ module.exports = {
   findCommentById,
   updateComment,
   deleteComment,
+  findRepliesByCommentId,
 };

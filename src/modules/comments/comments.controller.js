@@ -57,6 +57,33 @@ const getCommentsByPostController = async (
   }
 };
 
+const getRepliesByCommentController =
+  async (req, res, next) => {
+
+    try {
+
+      const { commentId } = req.params;
+
+      const replies =
+        await commentsService.getRepliesByCommentService(
+          commentId
+        );
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Replies fetched successfully",
+        data: replies,
+      });
+
+    } catch (error) {
+
+      next(error);
+
+    }
+
+};
+
 const updateCommentController = async (
   req,
   res,
@@ -115,6 +142,7 @@ const deleteCommentController = async (
 module.exports = {
   createCommentController,
   getCommentsByPostController,
+  getRepliesByCommentController,
   updateCommentController,
   deleteCommentController,
 };
