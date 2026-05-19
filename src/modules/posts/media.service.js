@@ -78,12 +78,6 @@ const getPostMediaService = async (
 
 };
 
-module.exports = {
-  savePostMediaService,
-  getPostMediaService,
-};
-
-
 
 module.exports = {
   savePostMediaService,

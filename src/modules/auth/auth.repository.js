@@ -36,8 +36,30 @@ const findUserById = async (id) => {
   return result.rows[0];
 };
 
+
+const upgradeUserToCreator = async (
+  userId
+) => {
+
+  const query = `
+    UPDATE users
+    SET role = 'creator'
+    WHERE id = $1
+    RETURNING id, username, email, role;
+  `;
+
+  const result = await pool.query(
+    query,
+    [userId]
+  );
+
+  return result.rows[0];
+};
+
+
 module.exports = {
   createUser,
   findUserByEmail,
   findUserById,
+  upgradeUserToCreator,
 };

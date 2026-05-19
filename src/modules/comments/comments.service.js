@@ -1,5 +1,16 @@
+
 const commentsRepository = require(
   "./comments.repository"
+);
+
+const activityService = require(
+  "../activity/activity.service"
+);
+
+const {
+  ACTIVITY_TYPES,
+} = require(
+  "../activity/activity.constants"
 );
 
 const createCommentService = async ({
@@ -9,7 +20,7 @@ const createCommentService = async ({
   parentCommentId,
 }) => {
 
-  // Optional production validation
+  // Validate parent comment
   if (parentCommentId) {
 
     const parentComment =
@@ -28,9 +39,9 @@ const createCommentService = async ({
         "Reply must belong to same post"
       );
     }
-
   }
 
+  // Create comment
   const comment =
     await commentsRepository.createComment({
       postId,
@@ -38,6 +49,24 @@ const createCommentService = async ({
       content,
       parentCommentId,
     });
+
+  // Activity logging
+  await activityService.createActivity({
+    userId,
+
+    activityType: parentCommentId
+      ? ACTIVITY_TYPES.REPLY_CREATED
+      : ACTIVITY_TYPES.COMMENT_CREATED,
+
+    entityId: comment.id,
+
+    entityType: "comment",
+
+    metadata: {
+      postId,
+      parentCommentId,
+    },
+  });
 
   return comment;
 };

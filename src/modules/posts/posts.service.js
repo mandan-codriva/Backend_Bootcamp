@@ -1,6 +1,9 @@
 const postsRepository = require("./posts.repository");
 
 const mediaService = require("./media.service");
+const authRepository = require("../auth/auth.repository");
+
+const activityService = require("../activity/activity.service");
 
 const createPostService = async (postData, userId, files) => {
   const { title, content } = postData;
@@ -10,6 +13,29 @@ const createPostService = async (postData, userId, files) => {
 
   // Save uploaded media
   const media = await mediaService.savePostMediaService(post.id, files);
+
+const user =
+  await authRepository.findUserById(
+    userId
+  );
+
+// Auto-upgrade user → creator
+if (user.role === "USER") {
+
+  await authRepository.upgradeUserToCreator(
+    userId
+  );
+
+}
+
+
+
+  await activityService.createActivity({
+   userId,
+   activityType: "BLOG_PUBLISHED",
+   entityId: post.id,
+   entityType: "post"
+});
 
   return {
     ...post,

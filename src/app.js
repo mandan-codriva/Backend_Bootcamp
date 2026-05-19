@@ -6,6 +6,8 @@ const swaggerSpec = require(
   "./config/swagger"
 );
 
+
+
 const express = require("express");
 
 const helmet = require("helmet");
@@ -21,6 +23,7 @@ const cookieParser = require(
 );
 
 const pool = require("./config/db");
+
 
 const errormiddleware = require(
   "./middleware/error.middleware"
@@ -45,6 +48,10 @@ const commentsRoutes = require(
 
 const reactionsRoutes = require(
   "./modules/reactions/reactions.routes"
+);
+
+const subscribersRoutes = require(
+  "./modules/subscribers/subscribers.routes"
 );
 
 const app = express();
@@ -126,6 +133,11 @@ app.use(
 app.use(
   "/api/v1/reactions",
   reactionsRoutes
+);
+
+app.use(
+"/api/v1/subscribers",
+subscribersRoutes
 );
 
 

@@ -26,7 +26,7 @@ const postIdValidation = [
   param("postId")
     .isUUID()
     .withMessage(
-      "Post ID must be an integer"
+      "Post ID must be an uuid"
     ),
 ];
 

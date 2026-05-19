@@ -151,6 +151,9 @@ const deletePost = async (id) => {
 
 
 
+
+
+
 module.exports = {
   createPost,
   getAllPosts,
@@ -158,4 +161,5 @@ module.exports = {
   updatepost,
   deletePost,
   totalPosts,
+  
 };

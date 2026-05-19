@@ -1,5 +1,16 @@
+
 const reactionsRepository = require(
   "./reactions.repository"
+);
+
+const activityService = require(
+  "../activity/activity.service"
+);
+
+const {
+  ACTIVITY_TYPES,
+} = require(
+  "../activity/activity.constants"
 );
 
 const toggleReactionService = async ({
@@ -7,6 +18,7 @@ const toggleReactionService = async ({
   postId,
   reactionType,
 }) => {
+
   const existingReaction =
     await reactionsRepository.findReaction(
       userId,
@@ -14,8 +26,9 @@ const toggleReactionService = async ({
     );
 
   // CASE 1
-  // No reaction exists
+  // Create new reaction
   if (!existingReaction) {
+
     const newReaction =
       await reactionsRepository.createReaction({
         userId,
@@ -23,18 +36,37 @@ const toggleReactionService = async ({
         reactionType,
       });
 
+    // Log only meaningful engagement
+    await activityService.createActivity({
+      userId,
+
+      activityType:
+        reactionType === "like"
+          ? ACTIVITY_TYPES.POST_LIKED
+          : ACTIVITY_TYPES.POST_DISLIKED,
+
+      entityId: postId,
+
+      entityType: "post",
+
+      metadata: {
+        reactionId: newReaction.id,
+      },
+    });
+
     return {
       action: "created",
       reaction: newReaction,
     };
   }
 
-  // case2
-  // Same reaction clicked again
+  // CASE 2
+  // Remove same reaction
   if (
     existingReaction.reaction_type ===
     reactionType
   ) {
+
     await reactionsRepository.deleteReaction(
       existingReaction.id
     );
@@ -45,18 +77,43 @@ const toggleReactionService = async ({
   }
 
   // CASE 3
-  // Different reaction selected
+  // Update reaction
   const updatedReaction =
     await reactionsRepository.updateReaction(
       existingReaction.id,
       reactionType
     );
 
+  // Log updated engagement
+  await activityService.createActivity({
+    userId,
+
+    activityType:
+      reactionType === "like"
+        ? ACTIVITY_TYPES.POST_LIKED
+        : ACTIVITY_TYPES.POST_DISLIKED,
+
+    entityId: postId,
+
+    entityType: "post",
+
+    metadata: {
+      previousReaction:
+        existingReaction.reaction_type,
+
+      updatedReaction:
+        reactionType,
+    },
+  });
+
   return {
     action: "updated",
     reaction: updatedReaction,
   };
 };
+
+
+
 
 const getReactionCountsService = async (
   postId
