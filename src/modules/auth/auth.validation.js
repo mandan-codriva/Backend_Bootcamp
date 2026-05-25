@@ -27,7 +27,22 @@ const loginValidation = [
     .withMessage("Password is required"),
 ];
 
+const verifyOtpValidation = [
+  body("userId")
+    .notEmpty()
+    .withMessage("User ID is required"),
+
+  body("otp")
+    .notEmpty()
+    .withMessage("OTP is required")
+    .isLength({ min: 6, max: 6 })
+    .withMessage("OTP must be 6 digits"),
+];
+
+
+
 module.exports = {
   signupValidation,
   loginValidation,
+  verifyOtpValidation,
 };
