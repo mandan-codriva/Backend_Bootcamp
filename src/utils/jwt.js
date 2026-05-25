@@ -6,6 +6,11 @@ const generateAccessToken = (user) => {
       id: user.id,
       email: user.email,
       role: user.role,
+      fullName: user.full_name || user.fullName,
+      full_name: user.full_name || user.fullName,
+      bio: user.bio,
+      avatarUrl: user.avatar_url || user.avatarUrl,
+      avatar_url: user.avatar_url || user.avatarUrl,
     },
     process.env.JWT_ACCESS_SECRET,
     {

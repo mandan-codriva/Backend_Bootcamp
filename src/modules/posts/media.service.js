@@ -4,61 +4,71 @@ const mediaRepository = require(
 
 const savePostMediaService = async (
   postId,
-  files
+  mediaItems
 ) => {
 
-  // No files uploaded
-  if (!files || files.length === 0) {
+  // No media items provided
+  if (!mediaItems || mediaItems.length === 0) {
     return [];
   }
 
   const mediaRecords = [];
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+  for (const item of mediaItems) {
+    let resolvedUrl = item;
+    let mimeType = null;
 
-
-  for (const file of files) {
-
-    let mediaType = "document";
-
-
-
-    if (
-      file.mimetype.startsWith("image")
-    ) {
-
-      mediaType = "image";
-
-    } else if (
-      file.mimetype.startsWith("video")
-    ) {
-
-      mediaType = "video";
-
-    } else if (
-      file.mimetype.startsWith("audio")
-    ) {
-
-      mediaType = "audio";
-
+    if (uuidRegex.test(item)) {
+      const document = await mediaRepository.getDocumentById(item);
+      if (document) {
+        resolvedUrl = document.file_url;
+        mimeType = document.mime_type;
+      }
     }
 
-
-
-    const mediaUrl = file.path;
-
-
+    let mediaType = "document";
+    if (mimeType) {
+      if (mimeType.startsWith("image/")) {
+        mediaType = "image";
+      } else if (mimeType.startsWith("video/")) {
+        mediaType = "video";
+      } else if (mimeType.startsWith("audio/")) {
+        mediaType = "audio";
+      }
+    } else {
+      const lowercaseUrl = resolvedUrl.toLowerCase();
+      if (
+        lowercaseUrl.endsWith(".jpg") ||
+        lowercaseUrl.endsWith(".jpeg") ||
+        lowercaseUrl.endsWith(".png") ||
+        lowercaseUrl.endsWith(".webp") ||
+        lowercaseUrl.endsWith(".gif")
+      ) {
+        mediaType = "image";
+      } else if (
+        lowercaseUrl.endsWith(".mp4") ||
+        lowercaseUrl.endsWith(".webm") ||
+        lowercaseUrl.endsWith(".avi") ||
+        lowercaseUrl.endsWith(".mov")
+      ) {
+        mediaType = "video";
+      } else if (
+        lowercaseUrl.endsWith(".mp3") ||
+        lowercaseUrl.endsWith(".wav")
+      ) {
+        mediaType = "audio";
+      }
+    }
 
     const media =
       await mediaRepository.createPostMedia({
         postId,
-        mediaUrl,
+        mediaUrl: resolvedUrl,
         mediaType,
       });
 
-
-
     mediaRecords.push(media);
-
   }
 
   return mediaRecords;

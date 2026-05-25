@@ -101,6 +101,8 @@ const getCreatorSubscribers =
     creatorId,
     page,
     limit,
+    sortBy = "subscribers.created_at",
+    sortOrder = "DESC",
   }) => {
 
     const offset =
@@ -123,7 +125,7 @@ const getCreatorSubscribers =
 
       WHERE subscribers.creator_id = $1
 
-      ORDER BY subscribers.created_at DESC
+      ORDER BY ${sortBy} ${sortOrder}
 
       LIMIT $2
       OFFSET $3;

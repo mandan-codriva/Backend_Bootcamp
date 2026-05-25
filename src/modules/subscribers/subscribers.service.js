@@ -40,14 +40,6 @@ const subscribeCreatorService =
       );
     }
 
-    // Only creators can be subscribed
-    if (
-      creator.role !== "creator"
-    ) {
-      throw new Error(
-        SUBSCRIPTION_ERRORS.INVALID_CREATOR
-      );
-    }
 
     // Check existing subscription
     const existingSubscription =
@@ -129,32 +121,63 @@ const getCreatorSubscribersService =
     creatorId,
     page = 1,
     limit = 10,
+    sortBy = "created_at",
+    sortOrder = "DESC",
   }) => {
 
-    page = parseInt(page);
-
-    limit = parseInt(limit);
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
 
     // Safe pagination
-    if (page < 1) {
+    if (isNaN(page) || page < 1) {
       page = 1;
     }
 
-    if (
-      limit < 1 ||
-      limit > 50
-    ) {
+    if (isNaN(limit) || limit < 1 || limit > 50) {
       limit = 10;
     }
 
-    const subscribers =
-      await subscribersRepository.getCreatorSubscribers({
+    // Whitelist sort fields
+    const allowedSortFields = ["created_at", "username"];
+    const verifiedSortBy = allowedSortFields.includes(sortBy) ? sortBy : "created_at";
+
+    // Resolve prefix table names
+    let finalSortBy = "subscribers.created_at";
+    if (verifiedSortBy === "username") {
+      finalSortBy = "users.username";
+    }
+
+    // Normalize sortOrder
+    const finalSortOrder = ["ASC", "DESC"].includes(String(sortOrder).toUpperCase())
+      ? String(sortOrder).toUpperCase()
+      : "DESC";
+
+    const [subscribers, totalSubscribers] = await Promise.all([
+      subscribersRepository.getCreatorSubscribers({
         creatorId,
         page,
         limit,
-      });
+        sortBy: finalSortBy,
+        sortOrder: finalSortOrder,
+      }),
+      subscribersRepository.getSubscriberCount(creatorId)
+    ]);
 
-    return subscribers;
+    const totalPages = Math.ceil(totalSubscribers / limit);
+
+    return {
+      subscribers,
+      pagination: {
+        total: totalSubscribers,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+        sortBy: verifiedSortBy,
+        sortOrder: finalSortOrder,
+      }
+    };
 };
 
 module.exports = {

@@ -5,37 +5,24 @@ const authRepository = require("../auth/auth.repository");
 
 const activityService = require("../activity/activity.service");
 
-const createPostService = async (postData, userId, files) => {
-  const { title, content } = postData;
+const { ACTIVITY_TYPES } = require('../activity/activity.constants');
+
+const createPostService = async (postData, userId) => {
+  console.log("postData is in post service", postData);
+  const { title, content, media: mediaIds, status, category } = postData;
 
   // Create post first
-  const post = await postsRepository.createPost(title, content, userId);
+  const post = await postsRepository.createPost(title, content, userId, status, category);
 
   // Save uploaded media
-  const media = await mediaService.savePostMediaService(post.id, files);
-
-const user =
-  await authRepository.findUserById(
-    userId
-  );
-
-// Auto-upgrade user → creator
-if (user.role === "USER") {
-
-  await authRepository.upgradeUserToCreator(
-    userId
-  );
-
-}
-
-
+  const media = await mediaService.savePostMediaService(post.id, mediaIds);
 
   await activityService.createActivity({
-   userId,
-   activityType: "BLOG_PUBLISHED",
-   entityId: post.id,
-   entityType: "post"
-});
+    userId,
+    activityType: ACTIVITY_TYPES.BLOG_PUBLISHED,
+    entityId: post.id,
+    entityType: "post"
+  });
 
   return {
     ...post,
@@ -44,29 +31,67 @@ if (user.role === "USER") {
 };
 
 const getAllPostsService = async (queryParams) => {
-  let { page = 1, limit = 5, search = "" } = queryParams;
+  let {
+    page = 1,
+    limit = 5,
+    search = "",
+    category = "",
+    userId,
+    authorId,
+    status,
+    sortBy = "created_at",
+    sortOrder = "DESC",
+  } = queryParams;
 
-  page = parseInt(page);
+  const finalUserId = userId || authorId;
 
-  limit = parseInt(limit);
+  // Resolve final status filter:
+  // 1. If status is explicitly passed, use it.
+  // 2. If no status is passed and finalUserId is provided, do NOT filter by status (return all).
+  // 3. If no status is passed and no user filter is provided, default to 'published' for security.
+  let finalStatus = status || null;
+  if (!status && !finalUserId) {
+    finalStatus = "published";
+  }
 
-  if (page < 1) {
+  // Whitelist sort fields to prevent SQL injection
+  const allowedSortFields = ["created_at", "published_at", "title"];
+  const finalSortBy = allowedSortFields.includes(sortBy) ? sortBy : "created_at";
+
+  // Normalize sortOrder
+  const finalSortOrder = ["ASC", "DESC"].includes(String(sortOrder).toUpperCase())
+    ? String(sortOrder).toUpperCase()
+    : "DESC";
+
+  page = parseInt(page, 10);
+  limit = parseInt(limit, 10);
+
+  // Validation
+  if (isNaN(page) || page < 1) {
     page = 1;
   }
 
-  if (limit < 1 || limit > 50) {
+  if (isNaN(limit) || limit < 1 || limit > 50) {
     limit = 5;
   }
 
-  const posts = await postsRepository.getAllPosts(page, limit, search);
+  const posts = await postsRepository.getAllPosts(
+    page,
+    limit,
+    search,
+    category,
+    finalUserId,
+    finalStatus,
+    finalSortBy,
+    finalSortOrder
+  );
 
-  for (const post of posts) {
-    const media = await mediaService.getPostMediaService(post.id);
-
-    post.media = media;
-  }
-
-  const totalPosts = await postsRepository.totalPosts(search);
+  const totalPosts = await postsRepository.totalPosts(
+    search,
+    category,
+    finalUserId,
+    finalStatus
+  );
 
   const totalPages = Math.ceil(totalPosts / limit);
 
@@ -74,12 +99,14 @@ const getAllPostsService = async (queryParams) => {
     page,
     limit,
     search,
-
+    category,
+    status: finalStatus,
+    sortBy: finalSortBy,
+    sortOrder: finalSortOrder,
     totalPosts,
     totalPages,
 
     hasNextPage: page < totalPages,
-
     hasPrevPage: page > 1,
 
     posts,
@@ -90,7 +117,9 @@ const getPostByIdService = async (id) => {
   const post = await postsRepository.getPostById(id);
 
   if (!post) {
-    throw new Error("Post not found");
+    const error = new Error("Post not found");
+    error.status = 404;
+    throw error;
   }
   const media = await mediaService.getPostMediaService(id);
 
@@ -104,17 +133,23 @@ const updatePostService = async (postId, postData, userId) => {
   const existingPost = await postsRepository.getPostById(postId);
 
   if (!existingPost) {
-    throw new Error("Post not found");
+    const error = new Error("existing Post not found");
+    error.status = 404;
+    throw error;
   }
 
   if (existingPost.author_id !== userId) {
-    throw new Error("You are not allowed to update this post");
+    const error = new Error("You are not allowed to update this post");
+    error.status = 403;
+    throw error;
   }
 
   const updatedPost = await postsRepository.updatepost(
     postId,
     postData.title,
     postData.content,
+    postData.status,
+    postData.category,
   );
 
   return updatedPost;
@@ -124,11 +159,15 @@ const deletePostService = async (postId, userId) => {
   const existingPost = await postsRepository.getPostById(postId);
 
   if (!existingPost) {
-    throw new Error("Post not found");
+    const error = new Error("existing Post not found");
+    error.status = 404;
+    throw error;
   }
 
   if (existingPost.author_id !== userId) {
-    throw new Error("You are not allowed to delete this post");
+    const error = new Error("You are not allowed to delete this post");
+    error.status = 403;
+    throw error;
   }
 
   const deletedPost = await postsRepository.deletePost(postId);

@@ -51,7 +51,28 @@ const getMediaByPostId = async (
   return result.rows;
 };
 
+const getDocumentById = async (
+  id
+) => {
+
+  const query = `
+    SELECT *
+    FROM documents
+    WHERE id = $1;
+  `;
+
+  const values = [id];
+
+  const result = await pool.query(
+    query,
+    values
+  );
+
+  return result.rows[0];
+};
+
 module.exports = {
   createPostMedia,
   getMediaByPostId,
+  getDocumentById,
 };

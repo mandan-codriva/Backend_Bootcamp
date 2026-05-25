@@ -134,18 +134,23 @@ const getCreatorSubscribersController =
       const {
         page,
         limit,
+        sortBy,
+        sortOrder,
       } = req.query;
 
-      const subscribers =
+      const result =
         await subscribersService.getCreatorSubscribersService({
           creatorId,
           page,
           limit,
+          sortBy,
+          sortOrder,
         });
 
       return res.status(200).json({
         success: true,
-        data: subscribers,
+        pagination: result.pagination,
+        data: result.subscribers,
       });
 
     } catch (error) {

@@ -54,6 +54,11 @@ const subscribersRoutes = require(
   "./modules/subscribers/subscribers.routes"
 );
 
+const mediaRoutes = require("./modules/media/upload.routes");
+const adminRoutes = require("./modules/admin/admin.routes");
+const analyticsRoutes = require("./modules/analytics/analytics.routes");
+
+
 const app = express();
 
 
@@ -63,7 +68,15 @@ const app = express();
 // BODY PARSER
 app.use(express.json());
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Dynamically echo the requesting origin to satisfy cross-origin cookie sharing credentials
+      callback(null, true);
+    },
+    credentials: true,
+  })
+);
 
 
 // STATIC FILES
@@ -73,6 +86,9 @@ app.use(
     path.join(__dirname, "../uploads")
   )
 );
+
+app.use("/api/v1/", mediaRoutes);
+
 
 
 
@@ -114,10 +130,7 @@ app.get("/api-docs.json", (req, res) => {
 });
 
 // ROUTES
-app.use(
-  "/api/v1/auth",
-  authRoutes
-);
+app.use("/api/v1/auth",authRoutes);
 app.use("/api/v1/profiles", profileRoutes);
 
 app.use(
@@ -139,6 +152,9 @@ app.use(
 "/api/v1/subscribers",
 subscribersRoutes
 );
+
+app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
 
 
 
@@ -204,13 +220,33 @@ app.get(
 
   authMiddleware,
 
-  (req, res) => {
-
-    res.status(200).json({
-      success: true,
-      user: req.user,
-    });
-
+  async (req, res, next) => {
+    try {
+      const authRepository = require("./modules/auth/auth.repository");
+      const user = await authRepository.findUserById(req.user.id);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+      res.status(200).json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          fullName: user.full_name,
+          full_name: user.full_name,
+          bio: user.bio,
+          avatarUrl: user.avatar_url,
+          avatar_url: user.avatar_url,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 );
 

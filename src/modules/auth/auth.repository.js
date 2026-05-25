@@ -16,8 +16,14 @@ const createUser = async (username, email, passwordHash) => {
 
 const findUserByEmail = async (email) => {
   const query = `
-    SELECT * FROM users
-    WHERE email = $1
+    SELECT 
+      u.*,
+      p.full_name,
+      p.bio,
+      p.avatar_url
+    FROM users u
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE u.email = $1
   `;
 
   const result = await pool.query(query, [email]);
@@ -26,9 +32,17 @@ const findUserByEmail = async (email) => {
 };
 const findUserById = async (id) => {
   const query = `
-    SELECT id, username, email, role
-    FROM users
-    WHERE id = $1
+    SELECT 
+      u.id, 
+      u.username, 
+      u.email, 
+      u.role,
+      p.full_name,
+      p.bio,
+      p.avatar_url
+    FROM users u
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE u.id = $1
   `;
 
   const result = await pool.query(query, [id]);
@@ -37,22 +51,15 @@ const findUserById = async (id) => {
 };
 
 
-const upgradeUserToCreator = async (
-  userId
-) => {
-
+const updateUserRole = async (userId, role) => {
   const query = `
     UPDATE users
-    SET role = 'creator'
+    SET role = $2
     WHERE id = $1
     RETURNING id, username, email, role;
   `;
 
-  const result = await pool.query(
-    query,
-    [userId]
-  );
-
+  const result = await pool.query(query, [userId, role.toLowerCase()]);
   return result.rows[0];
 };
 
@@ -61,5 +68,5 @@ module.exports = {
   createUser,
   findUserByEmail,
   findUserById,
-  upgradeUserToCreator,
+  updateUserRole,
 };

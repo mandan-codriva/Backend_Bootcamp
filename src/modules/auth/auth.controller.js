@@ -14,21 +14,26 @@ const signupController = async (req, res, next) => {
   }
 };
 
-const loginController = async (req, res, next) => {
+const verifyOtpController = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const result = await authService.loginService(
-      req.body,
-      req
-    );
+    const result =
+      await authService.verifyOtpLoginService({
+        ...req.body,
+        req,
+      });
 
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Login successful",
       data: {
@@ -42,6 +47,21 @@ const loginController = async (req, res, next) => {
 };
 
 
+
+const loginController = async (req, res, next) => {
+  try {
+    const result = await authService.loginService(
+      req.body,
+      req
+    );
+
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 const refreshController = async (
   req,
   res,
@@ -49,7 +69,10 @@ const refreshController = async (
 ) => {
   try {
     const refreshToken =
-      req.cookies.refreshToken;
+      req.cookies.refreshToken ||
+      req.body?.refreshToken ||
+      req.headers["x-refresh-token"] ||
+      (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
     const result =
       await authService.refreshService(
@@ -62,8 +85,8 @@ const refreshController = async (
       result.refreshToken,
       {
         httpOnly: true,
-        secure: false,
-        sameSite: "strict",
+        secure: true,
+        sameSite: "none",
         maxAge:
           7 * 24 * 60 * 60 * 1000,
       }
@@ -90,7 +113,10 @@ const logoutController = async (
 ) => {
   try {
     const refreshToken =
-      req.cookies.refreshToken;
+      req.cookies.refreshToken ||
+      req.body?.refreshToken ||
+      req.headers["x-refresh-token"] ||
+      (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
     await authService.logoutService(
       refreshToken
@@ -115,5 +141,6 @@ module.exports = {
   loginController,
   refreshController,
   logoutController,
+  verifyOtpController,
 };
 

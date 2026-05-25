@@ -13,8 +13,7 @@ const createPostController = async (
     const post =
       await postsService.createPostService(
         req.body,
-        req.user.id,
-        req.files
+        req.user.id
       );
 
 
@@ -71,6 +70,8 @@ const getAllPostsController = async (
       },
 
       search: result.search,
+
+      category: result.category,
 
       data: result.posts,
     });

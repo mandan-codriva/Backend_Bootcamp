@@ -6,10 +6,6 @@ const postsController = require(
   "./posts.controller"
 );
 
-const upload = require(
-  "./posts.upload"
-);
-
 const authMiddleware = require(
   "../../middleware/auth.middleware"
 );
@@ -33,7 +29,7 @@ const {
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             required:
@@ -44,24 +40,20 @@ const {
  *                 type: string
  *               content:
  *                 type: string
- *               media:
+ *               mediaUrls:
  *                 type: array
  *                 items:
  *                   type: string
- *                   format: binary
  *     responses:
  *       201:
  *         description: Post created successfully
  */
 
 
-// CREATE POST WITH MEDIA
 router.post(
   "/",
 
   authMiddleware,
-
-  upload.array("media", 10),
 
   createPostValidation,
 
