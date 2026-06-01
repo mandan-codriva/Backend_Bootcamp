@@ -11,6 +11,12 @@ const {
   getAdminStatsController,
 } = require("./analytics.controller");
 
+const {
+  postIdParamValidation,
+} = require("./analytics.validation");
+
+const validateMiddleware = require("../../middleware/validate.middleware");
+
 // Apply basic authentication globally to all analytics routes
 router.use(authMiddleware);
 
@@ -24,6 +30,8 @@ router.get(
 router.get(
   "/posts/:postId",
   authorize(ROLES.USER),
+  postIdParamValidation,
+  validateMiddleware,
   getPostAnalyticsController
 );
 

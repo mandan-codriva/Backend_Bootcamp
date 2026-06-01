@@ -69,7 +69,7 @@ const updateUserRoleService = async (userId, targetRole, currentAdminId) => {
   }
 
   // Prevent self demotion to keep the platform safe
-  if (parseInt(userId, 10) === parseInt(currentAdminId, 10) && normalizedRole !== ROLES.ADMIN) {
+  if (String(userId).toLowerCase() === String(currentAdminId).toLowerCase() && normalizedRole !== ROLES.ADMIN) {
     const error = new Error("Self-demotion is not allowed. You cannot strip your own admin privileges.");
     error.status = 400;
     throw error;

@@ -1,4 +1,5 @@
 const analyticsRepository = require("./analytics.repository");
+const AppError = require("../../utils/appError");
 
 /**
  * Calculates Creator Score based on views, likes, comments, and subscribers.
@@ -92,7 +93,7 @@ const getBlogPostSummary = async (postId) => {
   const stats = await analyticsRepository.getBlogPostLevelStats(postId);
   
   if (!stats) {
-    throw new Error("Post not found");
+    throw new AppError("Post not found", 404);
   }
 
   const views = parseInt(stats.views || 0);

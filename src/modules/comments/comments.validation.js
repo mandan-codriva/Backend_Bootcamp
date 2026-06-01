@@ -4,6 +4,7 @@ const { body, param } = require(
 
 const createCommentValidation = [
   body("postId")
+    .trim()
     .notEmpty()
     .withMessage("Post ID is required")
     .isUUID()
@@ -17,6 +18,12 @@ const createCommentValidation = [
     .withMessage(
       "Comment must be at least 2 characters"
     ),
+
+  body("parentCommentId")
+    .optional()
+    .trim()
+    .isUUID()
+    .withMessage("Parent Comment ID must be a valid UUID"),
 ];
 
 const updateCommentValidation = [

@@ -1,4 +1,4 @@
-const { body } = require("express-validator");
+const { body, param } = require("express-validator");
 
 const updateProfileValidation = [
   body("fullName")
@@ -18,6 +18,13 @@ const updateProfileValidation = [
     .withMessage("Bio cannot exceed 500 characters"),
 ];
 
+const userIdValidation = [
+  param("userId")
+    .isUUID()
+    .withMessage("User ID must be a valid UUID"),
+];
+
 module.exports = {
   updateProfileValidation,
+  userIdValidation,
 };

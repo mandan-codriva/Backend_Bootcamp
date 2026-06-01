@@ -7,6 +7,7 @@ const authRepository = require(
   "../auth/auth.repository"
 );
 
+const AppError = require("../../utils/appError");
 const {
   SUBSCRIPTION_ERRORS,
 } = require(
@@ -23,8 +24,9 @@ const subscribeCreatorService =
     if (
       creatorId === subscriberId
     ) {
-      throw new Error(
-        SUBSCRIPTION_ERRORS.SELF_SUBSCRIBE
+      throw new AppError(
+        SUBSCRIPTION_ERRORS.SELF_SUBSCRIBE,
+        400
       );
     }
 
@@ -35,8 +37,9 @@ const subscribeCreatorService =
       );
 
     if (!creator) {
-      throw new Error(
-        SUBSCRIPTION_ERRORS.CREATOR_NOT_FOUND
+      throw new AppError(
+        SUBSCRIPTION_ERRORS.CREATOR_NOT_FOUND,
+        404
       );
     }
 
@@ -49,8 +52,9 @@ const subscribeCreatorService =
       });
 
     if (existingSubscription) {
-      throw new Error(
-        SUBSCRIPTION_ERRORS.ALREADY_SUBSCRIBED
+      throw new AppError(
+        SUBSCRIPTION_ERRORS.ALREADY_SUBSCRIBED,
+        400
       );
     }
 
@@ -77,8 +81,9 @@ const unsubscribeCreatorService =
       });
 
     if (!existingSubscription) {
-      throw new Error(
-        SUBSCRIPTION_ERRORS.SUBSCRIPTION_NOT_FOUND
+      throw new AppError(
+        SUBSCRIPTION_ERRORS.SUBSCRIPTION_NOT_FOUND,
+        404
       );
     }
 
