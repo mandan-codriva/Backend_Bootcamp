@@ -7,6 +7,7 @@ const activityService = require(
   "../activity/activity.service"
 );
 
+const AppError = require("../../utils/appError");
 const {
   ACTIVITY_TYPES,
 } = require(
@@ -29,14 +30,16 @@ const createCommentService = async ({
       );
 
     if (!parentComment) {
-      throw new Error(
-        "Parent comment not found"
+      throw new AppError(
+        "Parent comment not found",
+        404
       );
     }
 
     if (parentComment.post_id !== postId) {
-      throw new Error(
-        "Reply must belong to same post"
+      throw new AppError(
+        "Reply must belong to same post",
+        400
       );
     }
   }
@@ -148,12 +151,13 @@ const updateCommentService = async ({
     );
 
   if (!existingComment) {
-    throw new Error("Comment not found");
+    throw new AppError("Comment not found", 404);
   }
 
   if (existingComment.user_id !== userId) {
-    throw new Error(
-      "You are not authorized to update this comment"
+    throw new AppError(
+      "You are not authorized to update this comment",
+      403
     );
   }
 
@@ -177,12 +181,13 @@ const deleteCommentService = async ({
     );
 
   if (!existingComment) {
-    throw new Error("Comment not found");
+    throw new AppError("Comment not found", 404);
   }
 
   if (existingComment.user_id !== userId) {
-    throw new Error(
-      "You are not authorized to delete this comment"
+    throw new AppError(
+      "You are not authorized to delete this comment",
+      403
     );
   }
 

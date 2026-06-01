@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+const { verifyAccessToken } = require("../utils/jwt");
 
 const authMiddleware = (
   req,
@@ -6,31 +6,32 @@ const authMiddleware = (
   next
 ) => {
   try {
-    const authHeader =
-      req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: "No token provided",
+        message: "Access denied. No valid token provided.",
       });
     }
 
-    const token =
-      authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET
-    );
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Access denied. Token is empty.",
+      });
+    }
+
+    const decoded = verifyAccessToken(token);
 
     req.user = decoded;
-
     next();
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Invalid token",
+      message: "Invalid or expired token.",
     });
   }
 };

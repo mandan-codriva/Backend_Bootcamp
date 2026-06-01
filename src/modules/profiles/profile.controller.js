@@ -17,7 +17,7 @@ const getAllProfiles = async (req, res, next) => {
 
     const finalSearch = search || keyword || null;
     const finalSortBy = sort_by || sortBy;
-    const finalSortOrder = order || sort_order || sortOrder;
+    const finalSortOrder = (order || sort_order || sortOrder || "DESC").toLowerCase();
 
     const result = await profileService.getAllProfilesService({
       page,

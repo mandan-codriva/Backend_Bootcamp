@@ -58,6 +58,10 @@ const mediaRoutes = require("./modules/media/upload.routes");
 const adminRoutes = require("./modules/admin/admin.routes");
 const analyticsRoutes = require("./modules/analytics/analytics.routes");
 
+const weatherRoutes = require(
+  "./modules/weather/weather.routes"
+);
+
 
 const app = express();
 
@@ -130,7 +134,7 @@ app.get("/api-docs.json", (req, res) => {
 });
 
 // ROUTES
-app.use("/api/v1/auth",authRoutes);
+app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profiles", profileRoutes);
 
 app.use(
@@ -149,12 +153,13 @@ app.use(
 );
 
 app.use(
-"/api/v1/subscribers",
-subscribersRoutes
+  "/api/v1/subscribers",
+  subscribersRoutes
 );
 
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/weather", weatherRoutes);
 
 
 

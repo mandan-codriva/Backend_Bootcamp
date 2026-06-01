@@ -4,6 +4,7 @@ const router = express.Router();
 const authMiddleware = require("../../middleware/auth.middleware");
 const authorize = require("../../middleware/authorize.middleware");
 const { ROLES } = require("../../config/roles");
+const validateMiddleware = require("../../middleware/validate.middleware");
 
 const {
   listUsersController,
@@ -14,6 +15,14 @@ const {
   getUserDetailController,
   updateUserDetailController,
 } = require("./admin.controller");
+
+const {
+  adminUserIdParamValidation,
+  adminPostIdParamValidation,
+  adminCommentIdParamValidation,
+  adminUpdateRoleBodyValidation,
+  adminUpdateUserBodyValidation,
+} = require("./admin.validation");
 
 // Apply authentication globally to all admin routes
 router.use(authMiddleware);
@@ -38,7 +47,14 @@ router.get("/users", authorize(ROLES.USER), listUsersController);
  *     security:
  *       - bearerAuth: []
  */
-router.patch("/users/:id/role", authorize(ROLES.ADMIN), updateUserRoleController);
+router.patch(
+  "/users/:id/role",
+  authorize(ROLES.ADMIN),
+  adminUserIdParamValidation,
+  adminUpdateRoleBodyValidation,
+  validateMiddleware,
+  updateUserRoleController
+);
 
 /**
  * @swagger
@@ -98,8 +114,22 @@ router.patch("/users/:id/role", authorize(ROLES.ADMIN), updateUserRoleController
  *       404:
  *         description: User not found
  */
-router.get("/users/:id", authorize(ROLES.USER), getUserDetailController);
-router.patch("/users/:id", authorize(ROLES.ADMIN), updateUserDetailController);
+router.get(
+  "/users/:id",
+  authorize(ROLES.USER),
+  adminUserIdParamValidation,
+  validateMiddleware,
+  getUserDetailController
+);
+
+router.patch(
+  "/users/:id",
+  authorize(ROLES.ADMIN),
+  adminUserIdParamValidation,
+  adminUpdateUserBodyValidation,
+  validateMiddleware,
+  updateUserDetailController
+);
 
 /**
  * @swagger
@@ -110,7 +140,13 @@ router.patch("/users/:id", authorize(ROLES.ADMIN), updateUserDetailController);
  *     security:
  *       - bearerAuth: []
  */
-router.delete("/posts/:id", authorize(ROLES.ADMIN), moderateDeletePostController);
+router.delete(
+  "/posts/:id",
+  authorize(ROLES.ADMIN),
+  adminPostIdParamValidation,
+  validateMiddleware,
+  moderateDeletePostController
+);
 
 /**
  * @swagger
@@ -121,7 +157,13 @@ router.delete("/posts/:id", authorize(ROLES.ADMIN), moderateDeletePostController
  *     security:
  *       - bearerAuth: []
  */
-router.delete("/comments/:id", authorize(ROLES.ADMIN), moderateDeleteCommentController);
+router.delete(
+  "/comments/:id",
+  authorize(ROLES.ADMIN),
+  adminCommentIdParamValidation,
+  validateMiddleware,
+  moderateDeleteCommentController
+);
 
 /**
  * @swagger

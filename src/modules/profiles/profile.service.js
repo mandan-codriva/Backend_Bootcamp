@@ -1,4 +1,5 @@
 const profileRepository = require("./profile.repository");
+const AppError = require("../../utils/appError");
 
 const getAllProfilesService = async (options = {}) => {
   let {
@@ -61,9 +62,7 @@ const getProfileByUserIdService = async (userId) => {
   const profile = await profileRepository.getProfileByUserId(userId);
 
   if (!profile) {
-    const error = new Error("Profile not found");
-    error.status = 404;
-    throw error;
+    throw new AppError("Profile not found", 404);
   }
 
   return profile;
@@ -71,7 +70,7 @@ const getProfileByUserIdService = async (userId) => {
 
 const updateAvatarService = async (userId, avatarUrl) => {
   if (!avatarUrl) {
-    throw new Error("Avatar image is required");
+    throw new AppError("Avatar image is required", 400);
   }
 
   const updatedProfile = await profileRepository.updateAvatar(

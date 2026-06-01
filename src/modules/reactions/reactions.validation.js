@@ -4,14 +4,16 @@ const { body, param } = require(
 
 const toggleReactionValidation = [
   body("postId")
+    .trim()
     .notEmpty()
     .withMessage("Post ID is required")
     .isUUID()
     .withMessage(
-      "Post ID must be an integer"
+      "Post ID must be a valid UUID"
     ),
 
   body("reactionType")
+    .trim()
     .notEmpty()
     .withMessage(
       "Reaction type is required"
@@ -26,7 +28,7 @@ const postIdValidation = [
   param("postId")
     .isUUID()
     .withMessage(
-      "Post ID must be an uuid"
+      "Post ID must be a valid UUID"
     ),
 ];
 

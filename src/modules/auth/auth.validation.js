@@ -9,18 +9,28 @@ const signupValidation = [
     .withMessage("Username must be at least 3 characters"),
 
   body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
     .isEmail()
-    .withMessage("Invalid email"),
+    .withMessage("Invalid email")
+    .normalizeEmail(),
 
   body("password")
+    .notEmpty()
+    .withMessage("Password is required")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
 ];
 
 const loginValidation = [
   body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
     .isEmail()
-    .withMessage("Invalid email"),
+    .withMessage("Invalid email")
+    .normalizeEmail(),
 
   body("password")
     .notEmpty()
@@ -29,17 +39,19 @@ const loginValidation = [
 
 const verifyOtpValidation = [
   body("userId")
+    .trim()
     .notEmpty()
-    .withMessage("User ID is required"),
+    .withMessage("User ID is required")
+    .isUUID()
+    .withMessage("User ID must be a valid UUID"),
 
   body("otp")
+    .trim()
     .notEmpty()
     .withMessage("OTP is required")
     .isLength({ min: 6, max: 6 })
     .withMessage("OTP must be 6 digits"),
 ];
-
-
 
 module.exports = {
   signupValidation,

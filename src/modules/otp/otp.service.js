@@ -1,9 +1,8 @@
 
 const bcrypt = require("bcrypt");
-
 const otpRepository = require("./otp.repository");
-
 const generateOtp = require("../../utils/generateOtp");
+const AppError = require("../../utils/appError");
 
 const createOtpService = async ({
     userId,
@@ -68,7 +67,7 @@ const verifyOtpService = async ({
             existingOtp.id
         );
 
-        throw new Error("OTP expired");
+        throw new AppError("OTP expired", 400);
     }
 
     // Compare hash
@@ -79,9 +78,7 @@ const verifyOtpService = async ({
         );
 
     if (!isOtpValid) {
-        const error = new Error("Invalid OTP");
-        error.status = 400;
-        throw error;
+        throw new AppError("Invalid OTP", 400);
     }
 
     // Delete OTP after success

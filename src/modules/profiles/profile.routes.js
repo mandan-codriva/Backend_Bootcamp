@@ -4,7 +4,7 @@ const authMiddleware = require("../../middleware/auth.middleware");
 const authorize = require("../../middleware/authorize.middleware");
 const { ROLES } = require("../../config/roles");
 const validateMiddleware = require("../../middleware/validate.middleware");
-const { updateProfileValidation } = require("./profile.validation");
+const { updateProfileValidation, userIdValidation } = require("./profile.validation");
 const upload = require("../media/media.upload");
 
 const profileController = require("./profile.controller");
@@ -43,6 +43,8 @@ router.patch(
 
 router.get(
   "/:userId",
+  userIdValidation,
+  validateMiddleware,
   profileController.getProfileByUserId
 );
 

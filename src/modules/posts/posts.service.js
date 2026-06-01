@@ -1,4 +1,5 @@
 const postsRepository = require("./posts.repository");
+const AppError = require("../../utils/appError");
 
 const mediaService = require("./media.service");
 const authRepository = require("../auth/auth.repository");
@@ -40,7 +41,10 @@ const getAllPostsService = async (queryParams) => {
     authorId,
     status,
     sortBy = "created_at",
+    sort_by,
     sortOrder = "DESC",
+    sort_order,
+    order,
   } = queryParams;
 
   const finalUserId = userId || authorId;
@@ -54,13 +58,16 @@ const getAllPostsService = async (queryParams) => {
     finalStatus = "published";
   }
 
+  const resolvedSortBy = sortBy || sort_by || "created_at";
+  const resolvedSortOrder = sortOrder || sort_order || order || "DESC";
+
   // Whitelist sort fields to prevent SQL injection
   const allowedSortFields = ["created_at", "published_at", "title"];
-  const finalSortBy = allowedSortFields.includes(sortBy) ? sortBy : "created_at";
+  const finalSortBy = allowedSortFields.includes(resolvedSortBy) ? resolvedSortBy : "created_at";
 
   // Normalize sortOrder
-  const finalSortOrder = ["ASC", "DESC"].includes(String(sortOrder).toUpperCase())
-    ? String(sortOrder).toUpperCase()
+  const finalSortOrder = ["ASC", "DESC"].includes(String(resolvedSortOrder).toUpperCase())
+    ? String(resolvedSortOrder).toUpperCase()
     : "DESC";
 
   page = parseInt(page, 10);
@@ -117,9 +124,7 @@ const getPostByIdService = async (id) => {
   const post = await postsRepository.getPostById(id);
 
   if (!post) {
-    const error = new Error("Post not found");
-    error.status = 404;
-    throw error;
+    throw new AppError("Post not found", 404);
   }
   const media = await mediaService.getPostMediaService(id);
 
@@ -133,15 +138,11 @@ const updatePostService = async (postId, postData, userId) => {
   const existingPost = await postsRepository.getPostById(postId);
 
   if (!existingPost) {
-    const error = new Error("existing Post not found");
-    error.status = 404;
-    throw error;
+    throw new AppError("Post not found", 404);
   }
 
   if (existingPost.author_id !== userId) {
-    const error = new Error("You are not allowed to update this post");
-    error.status = 403;
-    throw error;
+    throw new AppError("You are not allowed to update this post", 403);
   }
 
   const updatedPost = await postsRepository.updatepost(
@@ -159,15 +160,11 @@ const deletePostService = async (postId, userId) => {
   const existingPost = await postsRepository.getPostById(postId);
 
   if (!existingPost) {
-    const error = new Error("existing Post not found");
-    error.status = 404;
-    throw error;
+    throw new AppError("Post not found", 404);
   }
 
   if (existingPost.author_id !== userId) {
-    const error = new Error("You are not allowed to delete this post");
-    error.status = 403;
-    throw error;
+    throw new AppError("You are not allowed to delete this post", 403);
   }
 
   const deletedPost = await postsRepository.deletePost(postId);

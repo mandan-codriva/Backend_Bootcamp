@@ -1,4 +1,4 @@
-const { body } = require(
+const { body, param } = require(
   "express-validator"
 );
 
@@ -29,16 +29,23 @@ const createPostValidation = [
     .isString()
     .withMessage("Category must be a string"),
 
-  // body("media")
-  //   .optional()
-  //   .isArray()
-  //   .withMessage("mediaUrls must be an array"),
+  body("media")
+    .optional()
+    .isArray()
+    .withMessage("Media must be an array"),
 
-  // body("media.*")
-  //   .isUUID()
-  //   .withMessage("Each media URL must be a Valid UUID"),
+  body("media.*")
+    .isUUID()
+    .withMessage("Each media item must be a valid UUID"),
+];
+
+const postIdValidation = [
+  param("id")
+    .isUUID()
+    .withMessage("Post ID must be a valid UUID"),
 ];
 
 module.exports = {
   createPostValidation,
+  postIdValidation,
 };

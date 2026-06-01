@@ -16,6 +16,7 @@ const validateMiddleware = require(
 
 const {
   createPostValidation,
+  postIdValidation,
 } = require("./posts.validation");
 
 /**
@@ -75,6 +76,8 @@ router.get(
 // GET SINGLE POST
 router.get(
   "/:id",
+  postIdValidation,
+  validateMiddleware,
   postsController.getPostByIdController
 );
 
@@ -85,6 +88,8 @@ router.put(
   "/:id",
 
   authMiddleware,
+
+  postIdValidation,
 
   createPostValidation,
 
@@ -100,6 +105,10 @@ router.delete(
   "/:id",
 
   authMiddleware,
+
+  postIdValidation,
+
+  validateMiddleware,
 
   postsController.deletePostController
 );
